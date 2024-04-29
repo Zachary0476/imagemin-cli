@@ -3,8 +3,7 @@ import fs from 'node:fs';
 import {dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import process from 'node:process';
-
-import execa from 'execa';
+import {execa} from 'execa';
 import test from 'ava';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

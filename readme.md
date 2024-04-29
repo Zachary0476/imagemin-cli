@@ -6,8 +6,8 @@
 
 ## Install
 
-```
-$ npm install --global imagemin-cli
+```sh
+npm install --global imagemin-cli
 ```
 
 ## Usage

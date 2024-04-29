@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import {Buffer} from 'node:buffer';
 import process from 'node:process';
 import arrify from 'arrify';
 import meow from 'meow';
@@ -9,6 +8,7 @@ import ora from 'ora';
 import plur from 'plur';
 import stripIndent from 'strip-indent';
 import pairs from 'lodash.pairs';
+import {isUint8Array} from 'uint8array-extras';
 
 const cli = meow(`
 	Usage
@@ -34,7 +34,7 @@ const cli = meow(`
 	flags: {
 		plugin: {
 			type: 'string',
-			alias: 'p',
+			shortFlag: 'p',
 			isMultiple: true,
 			default: [
 				'gifsicle',
@@ -45,14 +45,14 @@ const cli = meow(`
 		},
 		outDir: {
 			type: 'string',
-			alias: 'o',
+			shortFlag: 'o',
 		},
 	},
 });
 
 const requirePlugins = plugins => Promise.all(plugins.map(async ([plugin, options]) => {
 	try {
-		const {default: _plugin} = await import(`imagemin-${plugin}`); // eslint-disable-line node/no-unsupported-features/es-syntax
+		const {default: _plugin} = await import(`imagemin-${plugin}`);
 		return _plugin(options);
 	} catch {
 		console.error(stripIndent(`
@@ -88,7 +88,7 @@ const run = async (input, {outDir, plugin} = {}) => {
 	const plugins = await requirePlugins(pluginOptions);
 	const spinner = ora('Minifying images');
 
-	if (Buffer.isBuffer(input)) {
+	if (isUint8Array(input)) {
 		process.stdout.write(await imagemin.buffer(input, {plugins}));
 		return;
 	}
@@ -129,10 +129,9 @@ if (cli.input.length === 0 && process.stdin.isTTY) {
 	process.exit(1);
 }
 
-(async () => {
-	await run(
-		cli.input.length > 0
-			? cli.input
-			: await getStdin.buffer(),
-		cli.flags);
-})();
+await run(
+	cli.input.length > 0
+		? cli.input
+		: await getStdin.buffer(),
+	cli.flags,
+);
